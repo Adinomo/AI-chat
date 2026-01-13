@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>adinomo • AI Chat</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo">adinomo.AI</div>
+    <div class="header-controls">
+      <button class="clear-btn" id="clearChat">Clear Chat</button>
+      <button class="theme-toggle" id="themeToggle">🌙</button>
+    </div>
+  </header>
+
+  <div class="chat-container" id="chatContainer">
+    <!-- Pesan akan ditambahkan di sini oleh JavaScript -->
+  </div>
+
+  <div class="input-area">
+    <div class="input-wrapper">
+      <textarea 
+        id="messageInput" 
+        rows="1" 
+        placeholder="Ketik pesanmu di sini... (Shift + Enter untuk baris baru)"
+      ></textarea>
+      <button class="send-btn" id="sendBtn" disabled>➤</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+
+
+
