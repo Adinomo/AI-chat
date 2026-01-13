@@ -6,17 +6,12 @@ const themeToggle = document.getElementById('themeToggle');
 const clearBtn = document.getElementById('clearChat');
 
 // ==================== STATE & CONFIG ====================
-const STORAGE_KEY = 'adinomo-ai-chat-history'; // Ubah key storage biar beda dari versi sebelumnya
+const STORAGE_KEY = 'adinomo-ai-chat-history';
 let messages = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
 let isDark = localStorage.getItem('theme') === 'dark';
 document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 themeToggle.textContent = isDark ? '☀️' : '🌙';
-
-// ==================== GROQ CONFIG ====================
-const GROQ_API_KEY = " "; // ← GANTI DENGAN API KEY GROQ KAMU!
-const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
-const MODEL = "llama-3.3-70b-versatile"; // atau "llama-3.1-8b-instant" untuk lebih ringan
 
 // ==================== HELPER FUNCTIONS ====================
 function formatTime(date = new Date()) {
@@ -84,12 +79,8 @@ function clearChat() {
   chatContainer.innerHTML = '';
 }
 
-// ==================== GROQ API CALL ====================
+// ==================== GROQ PROXY CALL (via Vercel /api/chat) ====================
 async function getAIResponse(userMessage) {
-  if (!GROQ_API_KEY || GROQ_API_KEY === "gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") {
-    return ["Ups! API Key Groq belum diisi. Ganti dulu di script.js ya 😅"];
-  }
-
   const messagesToSend = messages.map(msg => ({
     role: msg.isUser ? "user" : "assistant",
     content: msg.content
@@ -100,42 +91,25 @@ async function getAIResponse(userMessage) {
   const typingEl = showTyping();
 
   try {
-    const response = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
+    const response = await fetch('/api/chat', {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          {
-            role: "system",
-            content: `Kamu adalah adinomo.AI, AI santai, helpful, sedikit humoris, dan selalu pakai bahasa Indonesia sehari-hari yang natural. 
-                      Jawab sesingkat mungkin kecuali diminta detail panjang. Gunakan emoji secukupnya biar friendly.`
-          },
-          ...messagesToSend
-        ],
-        temperature: 0.7,
-        max_tokens: 1200,
-        top_p: 0.95
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: messagesToSend })
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      if (response.status === 429) {
-        throw new Error("Rate limit Groq tercapai 😅 Tunggu beberapa menit ya (reset biasanya cepat)");
-      }
-      throw new Error(errorData.error?.message || "Error dari Groq");
+      const errText = await response.text();
+      throw new Error(`Proxy error: ${response.status} - ${errText}`);
     }
 
     const data = await response.json();
-    return [data.choices[0].message.content.trim()];
+    const aiReply = data.content.trim();
+
+    return [aiReply];
 
   } catch (err) {
-    console.error("Groq Error:", err);
-    return [`Waduh... ada masalah: ${err.message}\nCoba lagi nanti ya! 🚀`];
+    console.error("Error fetching AI:", err);
+    return [`Waduh... ada masalah koneksi ke AI 😅\n\n${err.message}\nCoba lagi ya!`];
   } finally {
     removeTyping();
   }
@@ -192,13 +166,7 @@ window.addEventListener('load', () => {
   
   messageInput.focus();
 
-  // Pesan selamat datang pertama kali (hanya muncul kalau chat kosong)
   if (messages.length === 0) {
     addMessage("Halo bro! 👋 Aku <strong>adinomo.AI</strong> siap nemenin ngobrol apa aja. Mau mulai dari mana nih? 😏", false);
-  }
-
-  // Peringatan kalau key belum diganti
-  if (GROQ_API_KEY.includes('xxxx')) {
-    addMessage("Eh... aku belum bisa jawab pake AI beneran nih 😅 Ganti dulu API Key Groq di script.js ya!", false);
   }
 });
