@@ -11,7 +11,7 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: "llama-3.1-8b-instant",  // model ringan, limit longgar, hampir pasti jalan di free tier
         messages: [
           { role: "system", content: "Kamu adalah adinomo.AI, AI santai, helpful, sedikit humoris, pakai bahasa Indonesia natural. Gunakan emoji secukupnya." },
           ...messages
